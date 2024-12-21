@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NAM PRINT</title>
+    <style>
+        body {
+            font-family: 'Courier New', Courier, monospace;
+            background-color: #D0C9B5;
+            color: #7f423d;
+            text-align: center;
+        }
+        h1 {
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            font-weight: bold;
+            color: #7f423d;
+        }
+        .error {
+            color: red;
+        }
+        input, select {
+            margin: 10px;
+            padding: 10px;
+            width: 200px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #7f423d;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #5b2e28;
+        }
+    </style>
+</head>
+<body>
+    <h1>NAM PRINT</h1>
+    <form id="printForm">
+        <input type="number" id="numPages" placeholder="จำนวนหน้า" required>
+        <select id="paperThickness">
+            <option value="70">70 แกรม</option>
+            <option value="100">100 แกรม</option>
+        </select>
+        <select id="colorType">
+            <option value="blackWhite">ขาวดำ</option>
+            <option value="color">สี</option>
+        </select>
+        <select id="printFormat">
+            <option value="single">หน้าเดียว</option>
+            <option value="double">หน้าหลัง</option>
+        </select>
+        <input type="number" id="numSheets" placeholder="จำนวนแผ่น" required>
+        <select id="bindingType">
+            <option value="spiral">สันเกลียว</option>
+            <option value="laminate">แลคซีน</option>
+            <option value="cornerStaple">เย็บมุม</option>
+            <option value="none">ปริ้นเฉยๆ</option>
+        </select>
+        <button type="button" onclick="calculatePrice()">คำนวณราคา</button>
+    </form>
+    <div id="result"></div>
+
+    <script>
+        function calculatePrice() {
+            const numPages = parseInt(document.getElementById('numPages').value);
+            const paperThickness = parseInt(document.getElementById('paperThickness').value);
+            const colorType = document.getElementById('colorType').value;
+            const printFormat = document.getElementById('printFormat').value;
+            let numSheets = paperThickness === 70 ? (printFormat === 'double' ? Math.ceil(numPages / 2) : numPages) : numPages;
+            let printPrice = 0;
+
+            if (paperThickness === 70) {
+                if (colorType === 'blackWhite') {
+                    printPrice = (printFormat === 'double' ? numPages : numPages) * 0.5;
+                } else {
+                    printPrice = (printFormat === 'double' ? Math.ceil(numPages / 2) * 1.4 : numPages * 0.75);
+                }
+            } else {
+                if (colorType === 'blackWhite') {
+                    printPrice = (printFormat === 'double' ? Math.ceil(numPages / 2) * 1.3 : numPages * 0.7);
+                } else {
+                    printPrice = numPages; // สำหรับสีทั้งหน้าเดียวและหน้าหลัง
+                }
+            }
+
+            let bindingPrice = 0;
+            const bindingType = document.getElementById('bindingType').value;
+            const errorMessages = [];
+
+            if (bindingType === 'laminate') {
+                bindingPrice = 8;
+            } else if (bindingType === 'none') {
+                bindingPrice = 0;
+            } else if (bindingType === 'spiral') {
+                if (numSheets > 500) {
+                    errorMessages.push("จำนวนเกิน 500 แผ่น ไม่สามารถเข้าเล่มได้");
+                } else if (numSheets <= 75) {
+                    bindingPrice = 25;
+                } else if (numSheets <= 130) {
+                    bindingPrice = 30;
+                } else if (numSheets <= 190) {
+                    bindingPrice = 40;
+                } else if (numSheets <= 230) {
+                    bindingPrice = 50;
+                } else if (numSheets <= 270) {
+                    bindingPrice = 60;
+                } else if (numSheets <= 300) {
+                    bindingPrice = 70;
+                } else if (numSheets <= 350) {
+                    bindingPrice = 80;
+                } else if (numSheets <= 400) {
+                    bindingPrice = 90;
+                } else if (numSheets <= 500) {
+                    bindingPrice = 115;
+                }
+            } else if (bindingType === 'cornerStaple') {
+                if (numSheets > 80) {
+                    errorMessages.push("จำนวนเกิน 80 แผ่นไม่สามรถเข้าเล่มแลคซีนหรือเย็บมุมได้");
+                }
+            }
+
+            const totalPrice = printPrice + bindingPrice;
+
+            let resultText = `ราคาปริ้น: ${printPrice.toFixed(2)} บาท<br>
+                              ราคาการเข้าเล่ม: ${bindingPrice} บาท<br>
+                              ราคาสุทธิ: ${totalPrice.toFixed(2)} บาท`;
+            if (errorMessages.length > 0) {
+                resultText += '<div class="error">' + errorMessages.join('<br>') + '</div>';
+            }
+
+            document.getElementById('result').innerHTML = resultText;
+        }
+    </script>
+</body>
+</html>
